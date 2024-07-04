@@ -1,0 +1,94 @@
+/* Style for the news items */
+.news-container {
+    margin-top: 30px;
+}
+
+.news-item {
+    margin-bottom: 30px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+    background-color: #fff;
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.news-item:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.entry-thumbnail {
+    position: relative;
+}
+
+.entry-thumbnail img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-bottom: 1px solid #ddd;
+}
+
+.entry-content {
+    padding: 20px;
+}
+
+.entry-header .entry-title {
+    font-size: 1.5em;
+    margin: 0 0 10px;
+    font-weight: bold;
+}
+
+.entry-header .entry-title a {
+    text-decoration: none;
+    color: #333;
+}
+
+.entry-header .entry-title a:hover {
+    color: #0073aa;
+}
+
+.entry-summary {
+    margin-bottom: 15px;
+    color: #666;
+}
+
+.entry-footer .taxonomy-terms {
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #999;
+}
+
+.entry-footer .taxonomy-terms a {
+    text-decoration: none;
+    color: #0073aa;
+}
+
+.entry-footer .taxonomy-terms a:hover {
+    text-decoration: underline;
+}
+
+/* Pagination */
+.pagination {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.pagination a, .pagination span {
+    display: inline-block;
+    margin: 0 5px;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    color: #0073aa;
+    text-decoration: none;
+}
+
+.pagination a:hover {
+    background-color: #0073aa;
+    color: #fff;
+}
+
+.pagination .current {
+    background-color: #0073aa;
+    color: #fff;
+    border: 1px solid #0073aa;
+}

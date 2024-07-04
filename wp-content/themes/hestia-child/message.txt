@@ -1,0 +1,214 @@
+// create a new taxonomy
+// Hook into the init action and create the custom taxonomy
+add_action( 'init', 'create_subject_taxonomy' );
+
+function create_subject_taxonomy() {
+    // Define the labels for the custom taxonomy
+    $labels = array(
+        'name'              => _x( 'Subjects', 'taxonomy general name' ),
+        'singular_name'     => _x( 'Subject', 'taxonomy singular name' ),
+        'search_items'      => __( 'Search Subjects' ),
+        'all_items'         => __( 'All Subjects' ),
+        'edit_item'         => __( 'Edit Subject' ),
+        'update_item'       => __( 'Update Subject' ),
+        'add_new_item'      => __( 'Add New Subject' ),
+        'new_item_name'     => __( 'New Subject Name' ),
+        'menu_name'         => __( 'Subjects' ),
+    );
+
+    // Define the arguments for the custom taxonomy
+    $args = array(
+        'hierarchical'      => true,    
+        'labels'            => $labels,
+        'show_ui'           => true,
+        'show_admin_column' => true,
+        'query_var'         => true,
+        'show_in_rest' => true, //show in the dashboad
+        'rewrite'           => array( 'slug' => 'subject' ), // Change 'subject' to whatever slug you prefer
+    );
+
+    // Register the custom taxonomy
+    register_taxonomy( 'subject', array( 'news' ), $args );
+}
+
+require_once(ABSPATH . 'wp-load.php');
+
+// Function to import data from CSV to custom post type
+function import_csv_to_custom_post_type($csv_file_path)
+{
+    require_once(ABSPATH . 'wp-admin/includes/file.php');
+    require_once(ABSPATH . 'wp-admin/includes/media.php');
+    require_once(ABSPATH . 'wp-admin/includes/image.php');
+    // Open the CSV file
+    if (($handle = fopen($csv_file_path, "r")) !== FALSE) {
+        // Array to store processed IDs
+        $processed_ids = array();
+
+        // Check if processed IDs file exists and load it
+        $processed_ids_file = "processed_ids.txt";
+        if (file_exists($processed_ids_file)) {
+            $processed_ids = file($processed_ids_file, FILE_IGNORE_NEW_LINES);
+        }
+
+        // Loop through each row in the CSV file
+        while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+        
+
+        // Extract data from CSV
+        $id = isset($data[0]) ? $data[0] : ''; // Unique Identifier
+        $title = isset($data[1]) ? $data[1] : ''; // Post Title
+        $content = isset($data[2]) ? $data[2] : ''; // Post Description
+        $categories = isset($data[3]) ? (is_array($data[3]) ? $data[3] : explode(",", $data[3])) : array(); // News Type
+        $image_urls = isset($data[4]) ? (is_array($data[4]) ? $data[4] : explode(",", $data[4])) : array(); // Image URLs
+        $name = isset($data[5]) ? $data[5] : ''; // Name ACF Field
+        $email = isset($data[6]) ? $data[6] : ''; // Email ACF Field
+        $number = isset($data[7]) ? $data[7] : ''; // Number ACF Field
+
+        // The rest of your import logic goes here...
+        
+        // Check if post with same title already exists
+            $existing_post_query = new WP_Query(array(
+                'post_type'      => 'news',
+                'posts_per_page' => 1,
+                'title'          => $title
+            ));
+
+            if ($existing_post_query->have_posts()) {
+                // If post already exists, update it
+                $existing_post = $existing_post_query->posts[0];
+                $post_id = $existing_post->ID;
+
+                // Update post data
+                $post_data = array(
+                    'ID'            => $post_id,
+                    'post_title'    => $title,
+                    'post_content'  => $content,
+                );
+
+                wp_update_post($post_data);
+            } else {
+                // If post doesn't exist, insert it
+                $post_data = array(
+                    'ID'            => $id,
+                    'post_title'    => $title,
+                    'post_content'  => $content,
+                    'post_type'     => 'news',
+                    'post_status'   => 'publish'
+                );
+
+                $post_id = wp_insert_post($post_data);
+            }
+
+            // Check for post insertion/update errors
+            if (is_wp_error($post_id)) {
+                // Log error message
+                error_log("Error importing post: " . $post_id->get_error_message());
+                continue; // Skip to next iteration
+            }
+
+            // Set taxonomy terms
+            if (!empty($categories)) {
+                $term_ids = array();
+                foreach ($categories as $category) {
+                    $term = term_exists($category, 'subject');
+                    if ($term) {
+                        $term_ids[] = $term['term_id'];
+                    } else {
+                        // Term doesn't exist, create it
+                        $term = wp_insert_term($category, 'subject');
+                        if (!is_wp_error($term)) {
+                            $term_ids[] = $term['term_id']; 
+                        } else {
+                            // Log term creation error
+                            error_log("Error creating term '{$category}': " . $term->get_error_message());
+                        }
+                    }
+                }
+                // Assign terms to post
+                wp_set_post_terms($post_id, $term_ids, 'subject');
+            }
+
+            // Set ACF fields
+            update_field('news_tittle', $name, $post_id); // Name ACF Field
+            update_field('news_email', $email, $post_id); // Email ACF Field
+            update_field('news_number', $number, $post_id); // Number ACF Field
+            
+            // Set images
+            $image_count = count($image_urls);
+            $attached_images = array(); // Array to store IDs of attached images
+
+            foreach ($image_urls as $index => $image_url) {
+                // Check if image has already been attached to the post
+                $existing_attachment = attachment_url_to_postid($image_url);
+                
+                if ($existing_attachment) {
+                    // Image is already attached, skip attaching it again
+                    $image_id = $existing_attachment;
+                } else {
+                    // Download and attach the image to the post
+                    $image_id = media_sideload_image($image_url, $post_id, '', 'id');
+                }
+                
+                if (!is_wp_error($image_id)) {
+                    // Set the first image as the featured image if only one image is present
+                    if ($image_count === 1 && $index === 0) {
+                        set_post_thumbnail($post_id, $image_id);
+                    } else {
+                        // Add additional images to the post content
+                        if (!in_array($image_id, $attached_images)) {
+                            $post_content = get_post_field('post_content', $post_id);
+                            $image_html = '<img src="' . esc_url(wp_get_attachment_image_url($image_id, 'large')) . '" alt="">';
+                            // Append the image HTML to the post content
+                            $post_content .= $image_html;
+                            // Update the post content
+                            wp_update_post(array(
+                                'ID'           => $post_id,
+                                'post_content' => $post_content,
+                            ));
+                            // Add image ID to the list of attached images
+                            $attached_images[] = $image_id;
+                        }
+                    }
+                } else {
+                    // Log error if attaching the image fails
+                    // error_log("Error attaching image for post '{$title}': " . $image_id);
+                }
+            }
+
+            // Add ID to processed list
+            $processed_ids[] = $id;
+        }
+
+        // Close the CSV file
+        fclose($handle);
+
+        // Save processed IDs to file
+        file_put_contents($processed_ids_file, implode("\n", $processed_ids));
+    } else {
+        // Log error opening CSV file
+        error_log("Error opening CSV file: {$csv_file_path}");
+    }
+}
+
+// Call the function and pass the path to your CSV file
+// import_csv_to_custom_post_type(get_stylesheet_directory() . "/image.csv");
+
+// Define the shortcode function
+function run_csv_import_shortcode($atts) {
+    // Call the import function
+    ob_start(); // Start output buffering
+    import_csv_to_custom_post_type(get_stylesheet_directory() . "/image.csv"); // Call the import function with the file path
+    $output = ob_get_clean(); // Get the output buffer content and clean it
+
+    // Return a message indicating the import is complete
+    $output .= '<p>CSV import completed successfully.</p>';
+
+    return $output;
+}
+
+// Register the shortcode
+add_shortcode('run_csv_import', 'run_csv_import_shortcode');
+
+
+
+
