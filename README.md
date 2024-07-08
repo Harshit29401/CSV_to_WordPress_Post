@@ -1,17 +1,17 @@
-# CSV to WordPress Post Importer
+# CSV Import to WordPress Posts
 
-This project demonstrates how to import data from a CSV file into WordPress posts using a custom template and styles in the Hestia child theme.
+This project demonstrates how to import data from a CSV file into WordPress posts. It uses the Hestia theme with a custom child theme to manage the import process and display the imported posts.
 
 ## **Overview**
 
-The project involves importing data from a CSV file (`post.csv`) into WordPress posts. The Hestia theme is used with a custom child theme where a new template (`template-news.php`) and custom styles (`custom-style.css`) are applied.
+The project includes a WordPress site with a custom child theme for importing data from a CSV file into WordPress posts. The main functionalities include importing CSV data, using a custom page template for displaying posts, and applying custom styles.
 
 ## **Features**
 
-- **CSV Import**: Functionality to read from a CSV file and create WordPress posts.
-- **Custom Template**: A custom page template (`template-news.php`) to display the imported posts.
-- **Custom Styles**: Additional styles defined in `custom-style.css` to style the news posts page.
-- **Hestia Theme**: Utilizes the Hestia theme as the base for the child theme.
+- **CSV Import**: Import data from a CSV file into WordPress posts.
+- **Custom Page Template**: A page template for displaying the imported posts.
+- **Custom Styles**: Additional CSS styles for customizing the appearance of the imported data.
+- **Responsive Design**: The page template is designed to be responsive and mobile-friendly.
 
 ## **Screenshots**
 
@@ -27,25 +27,44 @@ The project involves importing data from a CSV file (`post.csv`) into WordPress 
 
 ![Mobile View](DB/Mobile%20View.png)
 
-
 ## **Folder Structure**
 
-- **`wp-content/themes/hestia-child/`**: The child theme folder for Hestia.
-  - **`template/`**: Contains the custom template file for displaying posts.
-    - **`template-news.php`**: Custom template for displaying imported posts.
-  - **`custom-css/`**: Contains custom CSS files for styling.
-    - **`custom-style.css`**: Custom CSS for the news posts page.
-  - **`post.csv`**: The CSV file containing data to be imported as WordPress posts.
+- **`wp-content/themes/hestia-child/`**: The child theme folder for the Hestia theme.
   - **`functions.php`**: Contains the main code for importing CSV data to WordPress posts.
+  - **`custom-css/`**: Folder for custom CSS files.
+    - **`custom-style.css`**: Custom stylesheet for additional styles.
+
+- **`post.csv`**: CSV file located in the `wp-content/themes/hestia-child` folder. It contains the data to be imported into WordPress posts.
+
+- **`template/`**: Contains custom page templates.
+  - **`template-news.php`**: Custom page template used for displaying the imported posts.
+
+- **`DB/`**: Folder containing images related to the CSV import process.
+  - **`CSV.PNG`**: Screenshot of the CSV file data.
+  - **`Desktop View.png`**: Screenshot of the desktop view of the imported data.
+  - **`Mobile View.png`**: Screenshot of the mobile view of the imported data.
+
+- **`csvpost.sql`**: SQL file for setting up the database schema for the CSV import process.
 
 ## **How It Works**
 
-1. **CSV File**: The `post.csv` file contains the data to be imported into WordPress. Each row in the CSV file represents a post with fields like title, content, and other metadata.
+1. **CSV Import**:
+   - The `functions.php` file contains code to read data from the `post.csv` file and create WordPress posts from the CSV data.
 
-2. **Functionality**:
-   - **CSV to Post Import**: Code in `functions.php` handles reading the CSV file and creating WordPress posts from the data.
-   - **Template**: `template-news.php` displays the imported posts.
-   - **Styles**: `custom-style.css` provides custom styles for the post display.
+2. **Custom Page Template**:
+   - `template-news.php` is a custom page template for displaying all imported posts.
+   - You can select this template when creating or editing a page in WordPress.
 
-3. **Output**: You can view the imported posts on the [All News](http://localhost/csvpost/all-news/) page.
+3. **Custom Styles**:
+   - `custom-style.css` contains additional styles for the page template.
 
+4. **Database Schema**:
+   - Use the `csvpost.sql` file to create the necessary database tables and structure for the CSV import process.
+
+## **Getting Started**
+
+To set up the CSV Import to WordPress Posts:
+
+1. **Clone the Repository**:
+   ```sh
+   git clone https://github.com/yourusername/csv-import-to-wordpress-posts.git
