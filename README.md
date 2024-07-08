@@ -61,10 +61,3 @@ The project includes a WordPress site with a custom child theme for importing da
 4. **Database Schema**:
    - Use the `csvpost.sql` file to create the necessary database tables and structure for the CSV import process.
 
-## **Getting Started**
-
-To set up the CSV Import to WordPress Posts:
-
-1. **Clone the Repository**:
-   ```sh
-   git clone https://github.com/yourusername/csv-import-to-wordpress-posts.git
